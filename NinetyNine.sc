@@ -276,7 +276,7 @@ test("decodeRunLengthEncoded") {
 scala> duplicate(List('a, 'b, 'c, 'c, 'd))
 res0: List[Symbol] = List('a, 'a, 'b, 'b, 'c, 'c, 'c, 'c, 'd, 'd)
  */
-def duplicateElements[A](list: List[A]): List[A] = {
+def duplicateEach[A](list: List[A]): List[A] = {
   @tailrec def go(list: List[A], acc: List[A]): List[A] = list match {
     case Nil => reverse(acc)
     case x :: xs => go(xs, x :: x :: acc)
@@ -285,13 +285,30 @@ def duplicateElements[A](list: List[A]): List[A] = {
   go(list, Nil)
 }
 
-test("duplicateElements") {
-  assert(duplicateElements(Nil) === Nil)
-  assert(duplicateElements(List(1)) === List(1, 1))
-  assert(duplicateElements(List('a, 'b, 'b, 'c)) === List('a, 'a, 'b, 'b, 'b, 'b, 'c, 'c))
+test("duplicateEach") {
+  assert(duplicateEach(Nil) === Nil)
+  assert(duplicateEach(List(1)) === List(1, 1))
+  assert(duplicateEach(List('a, 'b, 'b, 'c)) === List('a, 'a, 'b, 'b, 'b, 'b, 'c, 'c))
 }
 
 // #15 Duplicate the elements of a list a given number of times.
+def duplicateEachN[A](i: Int, list: List[A]): List[A] = {
+  @tailrec def dup(n: Int, a: A, onto: List[A]): List[A] = if (n > 0) dup(n - 1, a, a :: onto) else onto
+
+  @tailrec def go(list: List[A], acc: List[A]): List[A] = list match {
+    case Nil => reverse(acc)
+    case x :: xs => go(xs, acc = dup(n = i, x, acc))
+  }
+
+  go(list, Nil)
+}
+
+test("duplicateEachN") {
+  assert(duplicateEachN(1, Nil) === Nil)
+  assert(duplicateEachN(0, List('a)) === Nil)
+  assert(duplicateEachN(1, List('a)) === List('a))
+  assert(duplicateEachN(3, List('a, 'b, 'b, 'c)) === List('a, 'a, 'a , 'b, 'b, 'b, 'b, 'b, 'b, 'c, 'c, 'c))
+}
 
 // #16 Drop every Nth element from a list.
 
