@@ -39,17 +39,17 @@ trait Lists {
   /**
     * #07 Flatten a nested list structure.
     */
-  def flatten(list: Seq[_])
+  def flatten(list: Seq[_]): Seq[_]
 
   /**
     * #08 Eliminate consecutive duplicates of list elements.
     */
-  def dedupeAdjacents[A](list: Seq[A])
+  def compress[A](list: Seq[A]): Seq[A]
 
   /**
     * #09 Pack consecutive duplicates of list elements into sublists.
     */
-  def packAdjacentDupes[A](list: Seq[A]): Seq[Either[A, Seq[A]]]
+  def pack[A](list: Seq[A]): Seq[Either[A, Seq[A]]]
 
   /**
     * #10 Run-length encoding of a list.
@@ -73,7 +73,7 @@ trait Lists {
     * scala> decode(List((4, 'a), (1, 'b), (2, 'c), (2, 'a), (1, 'd), (4, 'e)))
     * res0: Seq[Symbol] = List('a, 'a, 'a, 'a, 'b, 'c, 'c, 'a, 'a, 'd, 'e, 'e, 'e, 'e)
     */
-  def decodeRunLengthEncoded[A](list: Seq[(A, Int)]): Seq[A]
+  def runLengthDecoded[A](list: Seq[(A, Int)]): Seq[A]
 
   /**
     * #13 Run-length encoding of a list (direct solution). -- my #10 basically does this already */
@@ -239,19 +239,20 @@ object Lists extends Lists {
     * #07 Flatten a nested list structure.
     */
   def flatten(list: Seq[_]) = {
+    // List(List(List(0)), List(1))
     def go(acc: Seq[_], list: Seq[_]): Seq[_] = list match {
-      case                 Nil => reverse(acc)
+      case                Nil => acc
       case (x: Seq[_]) +: xs  => go(go(acc, x), xs)
-      case  x           +: xs  => go(x +: acc, xs)
+      case  x          +: xs  => go(x +: acc, xs)
     }
 
-    go(Nil, list)
+    reverse(go(Nil, list))
   }
 
   /**
     * #08 Eliminate consecutive duplicates of list elements.
     */
-  def dedupeAdjacents[A](list: Seq[A]) = {
+  def compress[A](list: Seq[A]): Seq[A] = {
     @tailrec def go(list: Seq[A], acc: Seq[A]): Seq[A] = list match {
       case      Nil => reverse(acc)
       case x +: xs  => go(xs, if (acc.headOption contains x) acc else x +: acc)
@@ -263,7 +264,7 @@ object Lists extends Lists {
   /**
     * #09 Pack consecutive duplicates of list elements into sublists.
     */
-  def packAdjacentDupes[A](list: Seq[A]): Seq[Either[A, Seq[A]]] = {
+  def pack[A](list: Seq[A]): Seq[Either[A, Seq[A]]] = {
     type Grouped = Either[A, Seq[A]]
     def group[A](a: A, more: Seq[A]) = if (more.isEmpty) Left(a) else Right(a +: more)
 
@@ -304,9 +305,6 @@ object Lists extends Lists {
 
   /**
     * #11 Modified run-length encoding.
-    *
-    * scala> encodeModified(List('a, 'a, 'a, 'a, 'b, 'c, 'c, 'a, 'a, 'd, 'e, 'e, 'e, 'e))
-    * res0: Seq[Any] = List((4,'a), 'b, (2,'c), (2,'a), 'd, (4,'e))
     */
   def oneOrRunLengthEncoded[A](list: Seq[A]): Seq[Either[A, (A, Int)]] = {
     // packAdjacentDuplicates(list).map {
@@ -340,7 +338,7 @@ object Lists extends Lists {
     * scala> decode(List((4, 'a), (1, 'b), (2, 'c), (2, 'a), (1, 'd), (4, 'e)))
     * res0: Seq[Symbol] = List('a, 'a, 'a, 'a, 'b, 'c, 'c, 'a, 'a, 'd, 'e, 'e, 'e, 'e)
     */
-  def decodeRunLengthEncoded[A](list: Seq[(A, Int)]): Seq[A] = {
+  def runLengthDecoded[A](list: Seq[(A, Int)]): Seq[A] = {
     @tailrec def fill(a: A, n: Int, acc: Seq[A]): Seq[A] =
       if (n <= 0) acc else fill(a, n - 1, a +: acc)
 
@@ -351,9 +349,6 @@ object Lists extends Lists {
 
     go(list, Nil)
   }
-
-  /**
-    * #13 Run-length encoding of a list (direct solution). -- my #10 basically does this already */
 
   /**
     * #14 Duplicate the elements of a list.

@@ -1,7 +1,6 @@
 package problems.lists
 
 import problems._
-
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalactic.anyvals.{PosInt, PosZInt}
 import org.scalatest.{Matchers, WordSpec}
@@ -13,7 +12,7 @@ abstract class GenericListsSpec(lists: Lists) extends WordSpec {
   import Matchers._, GeneratorDrivenPropertyChecks._, TypeCheckedTripleEquals._
   import List.concat
 
-  "last" when {
+  "#01: last" when {
     "empty" should { "be None" in {
       lists.last(Nil) should === (None)
     }}
@@ -23,7 +22,7 @@ abstract class GenericListsSpec(lists: Lists) extends WordSpec {
     }}
   }
 
-  "penultimate" when {
+  "#02: penultimate" when {
     "empty" should { "be None" in {
       lists.penultimate(Nil) should === (None)
     }}
@@ -37,7 +36,7 @@ abstract class GenericListsSpec(lists: Lists) extends WordSpec {
     }}
   }
 
-  "nth" when {
+  "#03: nth" when {
     "index is negative" should { "be None" in forAll { (ind: PosInt, xs: List[Int]) =>
       lists.nth(-ind, xs) should === (None)
     }}
@@ -51,7 +50,7 @@ abstract class GenericListsSpec(lists: Lists) extends WordSpec {
     }}
   }
 
-  "length" when {
+  "#04: length" when {
     "empty" should { "be zero" in {
       lists.length(Nil) should === (0)
     }}
@@ -61,60 +60,95 @@ abstract class GenericListsSpec(lists: Lists) extends WordSpec {
     }}
   }
 
-  "reverse" when {
+  "#05: reverse" when {
     "empty" should { "be Nil" in {
       lists.reverse(Nil) should === (Nil)
     }}
 
-    "non-empty" should { "be invert the order of elements" in forAll { (start: Int, len: PosInt) =>
+    "non-empty" should { "invert the order of elements" in forAll { (start: Int, len: PosInt) =>
       lists.reverse(start to (start + len)) should === ((start + len.value) to start by -1)
     }}
   }
 
-  "isPalindrome" when {
-    "empty" should { "be true" in {
+  "#06: isPalindrome" when {
+    "empty" should { "be true for empty list" in {
       lists.isPalindrome(Nil) should === (true)
     }}
 
-    "palindrome" should { "be true" in forAll { (xs: List[Int], mid: Option[Int]) =>
-      lists.isPalindrome(concat(xs, mid, xs.reverse)) should === (true)
+    "palindrome" should { "be true for symmetric list" in forAll { (xs: List[Int], mid: Option[Int]) =>
+      val symmetric = concat(xs, mid, xs.reverse)
+
+      lists.isPalindrome(symmetric) should === (true)
     }}
 
-    "non-palindrome" should { "be false" in forAll { (x: Int, pre: List[Int], mid: Option[Int], post: List[Int]) =>
-      lists.isPalindrome(concat(pre, List(x), post, mid, post.reverse, List(x + 1), pre.reverse)) should === (false)
+    "non-palindrome" should { "be false for asymmetric list" in forAll { (x: Int, pre: List[Int], mid: Option[Int], post: List[Int]) =>
+      val asymmetric = concat(pre, List(x), post, mid, post.reverse, List(x + 1), pre.reverse)
+
+      lists.isPalindrome(asymmetric) should === (false)
     }}
   }
 
-//  "flatten" should {
-//    "" in {}
+  "#07: flatten" when {
+    def nest(level: Int, list: Seq[_]): Seq[_] = if (level < 1) list else nest(level - 1, Seq(list))
+    def fill(i: Int): Seq[Int] = 0 to i
+
+    "empty lists" should { "be empty list" in { lists.flatten(Nil) should === (Nil) }}
+
+    "nested" should { "bring all elements to one level deep" in forAll { (levels: List[PosZInt]) =>
+      val nested = levels.zipWithIndex map { case (level, pos) => nest(level, fill(pos)) }
+
+      lists.flatten(nested) should === (0 until levels.length flatMap fill)
+    }}
+  }
+
+  "#08: compress" when {
+    "empty list" should { "be empty list" in { lists.compress(Nil) should === (Nil) }}
+
+    "non-empty" should { "remove adjacent duplicates" in forAll { (lengths: Set[PosInt]) =>
+      val orderedLengths = util.Random shuffle lengths.toSeq
+      val expanded = orderedLengths flatMap { i => Seq.fill(i)(i) }
+
+      lists.compress(expanded) should === (orderedLengths)
+    }}
+  }
+
+  "#09: pack" when {
+    def fill(i: PosInt) = Seq.fill(i)(i)
+
+    "empty list" should { "be empty list" in { lists.pack(Nil) should === (Nil) } }
+
+    "non-empty" should { "lift adjacents of equal value into nested list" in forAll { (lengths: Set[PosInt]) =>
+      val orderedLengths = util.Random shuffle lengths.toSeq
+      val expanded = orderedLengths flatMap fill
+      val packed = orderedLengths map { i => Either.cond(i > 1, left = i, right = fill(i)) }
+
+      lists.pack(expanded) should === (packed)
+    }}
+  }
+
+//  "runLengthEncoded" when {
+//    "empty list" should { "be empty" in {} }
+//    "non-empty" should { "" in {} }
 //  }
 //
-//  "dedupeAdjacents" should {
-//    "" in {}
+//  "oneOrRunLengthEncoded" when {
+//    "empty list" should { "be empty" in {} }
+//    "non-empty" should { "" in {} }
 //  }
 //
-//  "packAdjacentDupes" should {
-//    "" in {}
+//  "runLengthDecoded" when {
+//    "empty list" should { "be empty" in {} }
+//    "non-empty" should { "" in {} }
 //  }
 //
-//  "runLengthEncoded" should {
-//    "" in {}
+//  "duplicateEach" when {
+//    "empty list" should { "be empty" in {} }
+//    "non-empty" should { "" in {} }
 //  }
 //
-//  "oneOrRunLengthEncoded" should {
-//    "" in {}
-//  }
-//
-//  "decodeRunLengthEncoded" should {
-//    "" in {}
-//  }
-//
-//  "duplicateEach" should {
-//    "" in {}
-//  }
-//
-//  "duplicateEachN" should {
-//    "" in {}
+//  "duplicateEachN" when {
+//    "empty list" should { "be empty" in {} }
+//    "non-empty" should { "" in {} }
 //  }
 }
 
