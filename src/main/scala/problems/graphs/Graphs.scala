@@ -1,6 +1,6 @@
-package problems
+package problems.graphs
 
-package object graphs {
+trait Graphs {
   /** #80 Conversions. */
 
   /** #81 Path from one node to another one. */
@@ -41,3 +41,5 @@ package object graphs {
 
   /** #99 Crossword puzzle. */
 }
+
+object Graphs extends Graphs

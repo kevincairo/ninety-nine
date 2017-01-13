@@ -1,6 +1,6 @@
-package problems
+package problems.trees
 
-package object trees {
+trait Trees {
   /** #54 Omitted; our tree representation will only allow well-formed trees. */
 
   /** #55 Construct completely balanced binary trees. */
@@ -41,3 +41,5 @@ package object trees {
 
   /** #73 Lisp-like tree representation. */
 }
+
+object Trees extends Trees

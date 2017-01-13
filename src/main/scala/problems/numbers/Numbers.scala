@@ -1,6 +1,6 @@
-package problems
+package problems.numbers
 
-package object numbers {
+trait Numbers {
   /** #31 Determine whether a given integer number is prime. */
 
   /** #32 Determine the greatest common divisor of two positive integer numbers. */
@@ -23,3 +23,5 @@ package object numbers {
 
   /** #41 A list of Goldbach compositions. */
 }
+
+object Numbers extends Numbers

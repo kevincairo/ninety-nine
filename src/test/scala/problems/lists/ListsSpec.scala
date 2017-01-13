@@ -9,7 +9,7 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 case class Negative[I](value: I) extends AnyVal
 
-class ListsSpec extends WordSpec {
+abstract class GenericListsSpec(lists: Lists) extends WordSpec {
   import Matchers._, GeneratorDrivenPropertyChecks._, TypeCheckedTripleEquals._
   import List.concat
 
@@ -117,3 +117,5 @@ class ListsSpec extends WordSpec {
 //    "" in {}
 //  }
 }
+
+class ListsSpec extends GenericListsSpec(Lists)

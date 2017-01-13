@@ -1,7 +1,6 @@
-package problems
+package problems.logic
 
-package object logic {
-
+trait Logic {
   /** #46 Truth tables for logical expressions. */
 
   /** #47 Truth tables for logical expressions (2). */
@@ -12,3 +11,5 @@ package object logic {
 
   /** #50 Huffman code. */
 }
+
+object Logic extends Logic
