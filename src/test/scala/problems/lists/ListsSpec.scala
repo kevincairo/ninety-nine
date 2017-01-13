@@ -12,6 +12,8 @@ abstract class GenericListsSpec(lists: Lists) extends WordSpec {
   import Matchers._, GeneratorDrivenPropertyChecks._, TypeCheckedTripleEquals._
   import List.concat
 
+  def fill(i: PosInt) = Seq.fill(i)(i)
+
   "#01: last" when {
     "empty" should { "be None" in {
       lists.last(Nil) should === (None)
@@ -113,11 +115,9 @@ abstract class GenericListsSpec(lists: Lists) extends WordSpec {
   }
 
   "#09: pack" when {
-    def fill(i: PosInt) = Seq.fill(i)(i)
-
     "empty list" should { "be empty list" in { lists.pack(Nil) should === (Nil) } }
 
-    "non-empty" should { "lift adjacents of equal value into nested list" in forAll { (lengths: Set[PosInt]) =>
+    "non-empty" should { "group adjacents of equal value into nested list" in forAll { (lengths: Set[PosInt]) =>
       val orderedLengths = util.Random shuffle lengths.toSeq
       val expanded = orderedLengths flatMap fill
       val packed = orderedLengths map { i => Either.cond(i > 1, left = i, right = fill(i)) }
@@ -126,16 +126,30 @@ abstract class GenericListsSpec(lists: Lists) extends WordSpec {
     }}
   }
 
-//  "runLengthEncoded" when {
-//    "empty list" should { "be empty" in {} }
-//    "non-empty" should { "" in {} }
-//  }
-//
-//  "oneOrRunLengthEncoded" when {
-//    "empty list" should { "be empty" in {} }
-//    "non-empty" should { "" in {} }
-//  }
-//
+  "runLengthEncoded" when {
+    "empty list" should { "be empty" in { lists.runLengthEncoded(Nil) should === (Nil) } }
+
+    "non-empty" should { "group adjacents of equal value into a pair of the value and number of adjacents" in forAll { (lengths: Set[PosInt]) =>
+      val orderedLengths = util.Random shuffle lengths.toSeq
+      val expanded = orderedLengths flatMap fill
+      val encoded = orderedLengths map { i => (i, i: Int) }
+
+      lists.runLengthEncoded(expanded) should === (encoded)
+    }}
+  }
+
+  "oneOrRunLengthEncoded" when {
+    "empty list" should { "be empty" in { lists.oneOrRunLengthEncoded(Nil) should === (Nil) } }
+
+    "non-empty" should { "group adjacents into value and run-length if run-length is longer than one" in forAll { (lengths: Set[PosInt]) =>
+      val orderedLengths = util.Random shuffle lengths.toSeq
+      val expanded = orderedLengths flatMap fill
+      val encoded = orderedLengths map { i => Either.cond(i > 1, left = i, right = (i, i: Int)) }
+
+      lists.oneOrRunLengthEncoded(expanded) should === (encoded)
+    }}
+  }
+
 //  "runLengthDecoded" when {
 //    "empty list" should { "be empty" in {} }
 //    "non-empty" should { "" in {} }
